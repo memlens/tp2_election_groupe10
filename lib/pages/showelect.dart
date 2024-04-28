@@ -64,8 +64,8 @@ class _ShowElectPageState extends State<ShowElectPage> {
                     color: Colors.white,
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundImage: candidate.image != null
-                            ? FileImage(candidate.image!)
+                        backgroundImage: candidate.imageUrl != null
+                            ? FileImage(candidate.imageUrl!)
                             : null,
                       ),
                       title: Text('${candidate.name} ${candidate.surname}'),

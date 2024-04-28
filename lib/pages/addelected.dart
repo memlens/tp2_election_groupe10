@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 import 'candidates.dart';
 
@@ -29,7 +31,23 @@ class _AddElectPageState extends State<AddElectPage> {
       });
     }
   }
+//Fonction pour l'envoie des données
+  Future<bool> sendJSONData(String url, Map<String, dynamic> data) async {
+    // Convertir les données en JSON
+    final jsonData = jsonEncode(data);
 
+    // Envoyer la requête HTTP POST avec les données JSON
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonData,
+    );
+    // Vérifier le code de statut de la réponse
+    print("response status : ");
+    print(response.statusCode);
+    return (response.statusCode >= 200 && response.statusCode <= 299);
+  }
+// Fin de la fonction
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
@@ -39,11 +57,29 @@ class _AddElectPageState extends State<AddElectPage> {
         surname: _surname,
         party: _party,
         bio: _bio,
-        image: _image,
+        imageUrl: _image,
       );
 
-      widget.addCandidate(candidate);
-      Navigator.pop(context);
+      final data = {
+        "userId": 1,
+        // Remplacez par l'ID de l'utilisateur approprié
+        "id": 0,
+        // L'ID sera attribué par le serveur
+        "title": "$_name $_surname",
+        // Utilisez les champs name et surname pour le titre
+        "body": "$_party $_bio",
+        // Utilisez les champs party et bio pour le corps
+      };
+//Test de la fonction http
+      final success = await sendJSONData('https://jsonplaceholder.typicode.com/posts', data);
+      if (success) {
+        print('Données envoyées avec succès');
+        widget.addCandidate(candidate);
+        Navigator.pop(context);
+      } else {
+        print('Erreur lors de l\'envoi des données');
+      }
+// fin du test
     }
   }
 
@@ -51,7 +87,7 @@ class _AddElectPageState extends State<AddElectPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Candidate'),
+        title: Text('Add Candidate'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -124,6 +160,7 @@ class _AddElectPageState extends State<AddElectPage> {
                   },
                 ),
                 // Add button
+                //ajout d'un margin au boutton
                 Container(
                   margin: const EdgeInsets.fromLTRB(10, 30, 10, 0),
                   child: ElevatedButton(
